@@ -55,6 +55,18 @@ void TcpServer::Listen(const int Backlog)
     }
 }
 
+void TcpServer::Accept()
+{
+    SOCKADDR_IN Address;
+    int AddressLength = sizeof(Address);
+    SOCKET Client = accept(ListenSocket, (SOCKADDR*)&Address, &AddressLength);
+    if (Client == INVALID_SOCKET)
+    {
+        throw GetException("Accept socket is invalid.");
+    }
+    // TODO Return Socket.
+}
+
 std::exception TcpServer::GetException(const char* Message)
 {
     const int ErrorCode = WSAGetLastError();

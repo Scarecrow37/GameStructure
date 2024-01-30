@@ -14,6 +14,7 @@ public:
 
     void Bind(unsigned short Port);
     void Listen(int Backlog = 1);
+    void Accept();
 
 protected:
     static std::exception GetException(const char* Message);
