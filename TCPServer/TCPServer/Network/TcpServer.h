@@ -12,6 +12,7 @@ public:
     TcpServer();
     ~TcpServer();
 
+    void Initialize();
     void Bind(unsigned short Port);
     void Listen(int Backlog = 1);
     void Accept();
@@ -22,6 +23,7 @@ protected:
 private:
     SOCKET ListenSocket;
 
+    bool Initialized;
     bool Bound;
     bool Listened;
 };

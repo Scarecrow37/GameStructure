@@ -5,21 +5,42 @@
 
 #pragma comment(lib, "ws2_32")
 
-TcpServer::TcpServer() : Bound(false), Listened(false)
+TcpServer::TcpServer() : ListenSocket(INVALID_SOCKET), Initialized(false), Bound(false), Listened(false)
 {
     WSAData WsaData;
     WSAStartup(MAKEWORD(2, 2), &WsaData);
-    ListenSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
 
 TcpServer::~TcpServer()
 {
-    closesocket(ListenSocket);
+    if (Initialized)
+    {
+        closesocket(ListenSocket);
+    }
     WSACleanup();
+}
+
+void TcpServer::Initialize()
+{
+    ListenSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (ListenSocket == INVALID_SOCKET)
+    {
+        Initialized = false;
+        throw GetException("Create listen socket fail.");
+    }
+    else
+    {
+        Initialized = true;
+    }
 }
 
 void TcpServer::Bind(const unsigned short Port)
 {
+    if (!Initialized)
+    {
+        Bound = false;
+        throw GetException("Initialize first before bind.");
+    }
     SOCKADDR_IN Address = {};
     Address.sin_family = AF_INET;
     Address.sin_addr.s_addr = htons(ADDR_ANY);
