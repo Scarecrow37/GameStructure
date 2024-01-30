@@ -22,7 +22,7 @@ void TcpServer::Bind(const unsigned short Port)
 {
     SOCKADDR_IN Address = {};
     Address.sin_family = AF_INET;
-    Address.sin_addr.s_addr = ADDR_ANY;
+    Address.sin_addr.s_addr = htons(ADDR_ANY);
     Address.sin_port = htons(Port);
     const int Result = bind(ListenSocket, (SOCKADDR*)&Address, sizeof(Address));
     if (Result == 0)
