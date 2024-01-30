@@ -10,6 +10,7 @@ int main()
     try
     {
         Server->Bind(12345);
+        Server->Listen();
     }
     catch (std::exception& Exception)
     {

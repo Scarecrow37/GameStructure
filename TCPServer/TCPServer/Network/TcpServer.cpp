@@ -5,7 +5,7 @@
 
 #pragma comment(lib, "ws2_32")
 
-TcpServer::TcpServer() : Bound(false)
+TcpServer::TcpServer() : Bound(false), Listened(false)
 {
     WSAData WsaData;
     WSAStartup(MAKEWORD(2, 2), &WsaData);
@@ -33,6 +33,25 @@ void TcpServer::Bind(const unsigned short Port)
     {
         Bound = false;
         throw GetException("Bind fail.");
+    }
+}
+
+void TcpServer::Listen(const int Backlog)
+{
+    if (!Bound)
+    {
+        Listened = false;
+        throw GetException("Bind socket first before listen.");
+    }
+    const int Result = listen(ListenSocket, Backlog);
+    if (Result == 0)
+    {
+        Listened = true;
+    }
+    else
+    {
+        Listened = false;
+        throw GetException("Listen fail.");
     }
 }
 
