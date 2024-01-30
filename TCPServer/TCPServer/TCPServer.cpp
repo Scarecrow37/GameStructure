@@ -1,6 +1,10 @@
 
-int main(int argc, char* argv[])
+#include "Network/TcpServer.h"
+
+int main()
 {
-    
+    TcpServer* Server = new TcpServer;
+
+    delete Server;
     return 0;
 }
