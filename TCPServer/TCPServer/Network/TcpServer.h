@@ -5,6 +5,8 @@
 #include <exception>
 #include <WinSock2.h>
 
+#include "Socket.h"
+
 
 class TcpServer
 {
@@ -15,7 +17,7 @@ public:
     void Initialize();
     void Bind(unsigned short port);
     void Listen(int backlog = 1);
-    void Accept();
+    Socket* Accept();
 
 protected:
     static std::exception GetException(const char* message);

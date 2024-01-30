@@ -76,7 +76,7 @@ void TcpServer::Listen(const int backlog)
     }
 }
 
-void TcpServer::Accept()
+Socket* TcpServer::Accept()
 {
     SOCKADDR_IN Address;
     int AddressLength = sizeof(Address);
@@ -85,7 +85,7 @@ void TcpServer::Accept()
     {
         throw GetException("Accept socket is invalid.");
     }
-    // TODO Return Socket.
+    return new Socket(Client);
 }
 
 std::exception TcpServer::GetException(const char* message)
