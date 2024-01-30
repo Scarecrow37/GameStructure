@@ -4,7 +4,8 @@
 class Socket
 {
 public:
-    Socket(SOCKET socket);
+    explicit Socket(SOCKET socket);
+    ~Socket();
 private:
     SOCKET _socket;
 };
