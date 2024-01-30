@@ -13,19 +13,19 @@ public:
     ~TcpServer();
 
     void Initialize();
-    void Bind(unsigned short Port);
-    void Listen(int Backlog = 1);
+    void Bind(unsigned short port);
+    void Listen(int backlog = 1);
     void Accept();
 
 protected:
-    static std::exception GetException(const char* Message);
+    static std::exception GetException(const char* message);
 
 private:
-    SOCKET ListenSocket;
+    SOCKET _listenSocket;
 
-    bool Initialized;
-    bool Bound;
-    bool Listened;
+    bool _initialized;
+    bool _bound;
+    bool _listened;
 };
 
 #endif

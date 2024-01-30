@@ -5,7 +5,7 @@
 
 #pragma comment(lib, "ws2_32")
 
-TcpServer::TcpServer() : ListenSocket(INVALID_SOCKET), Initialized(false), Bound(false), Listened(false)
+TcpServer::TcpServer() : _listenSocket(INVALID_SOCKET), _initialized(false), _bound(false), _listened(false)
 {
     WSAData WsaData;
     WSAStartup(MAKEWORD(2, 2), &WsaData);
@@ -13,65 +13,65 @@ TcpServer::TcpServer() : ListenSocket(INVALID_SOCKET), Initialized(false), Bound
 
 TcpServer::~TcpServer()
 {
-    if (Initialized)
+    if (_initialized)
     {
-        closesocket(ListenSocket);
+        closesocket(_listenSocket);
     }
     WSACleanup();
 }
 
 void TcpServer::Initialize()
 {
-    ListenSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (ListenSocket == INVALID_SOCKET)
+    _listenSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (_listenSocket == INVALID_SOCKET)
     {
-        Initialized = false;
+        _initialized = false;
         throw GetException("Create listen socket fail.");
     }
     else
     {
-        Initialized = true;
+        _initialized = true;
     }
 }
 
-void TcpServer::Bind(const unsigned short Port)
+void TcpServer::Bind(const unsigned short port)
 {
-    if (!Initialized)
+    if (!_initialized)
     {
-        Bound = false;
+        _bound = false;
         throw GetException("Initialize first before bind.");
     }
     SOCKADDR_IN Address = {};
     Address.sin_family = AF_INET;
     Address.sin_addr.s_addr = htons(ADDR_ANY);
-    Address.sin_port = htons(Port);
-    const int Result = bind(ListenSocket, (SOCKADDR*)&Address, sizeof(Address));
+    Address.sin_port = htons(port);
+    const int Result = bind(_listenSocket, (SOCKADDR*)&Address, sizeof(Address));
     if (Result == 0)
     {
-        Bound = true;
+        _bound = true;
     }
     else
     {
-        Bound = false;
+        _bound = false;
         throw GetException("Bind fail.");
     }
 }
 
-void TcpServer::Listen(const int Backlog)
+void TcpServer::Listen(const int backlog)
 {
-    if (!Bound)
+    if (!_bound)
     {
-        Listened = false;
+        _listened = false;
         throw GetException("Bind socket first before listen.");
     }
-    const int Result = listen(ListenSocket, Backlog);
+    const int Result = listen(_listenSocket, backlog);
     if (Result == 0)
     {
-        Listened = true;
+        _listened = true;
     }
     else
     {
-        Listened = false;
+        _listened = false;
         throw GetException("Listen fail.");
     }
 }
@@ -80,7 +80,7 @@ void TcpServer::Accept()
 {
     SOCKADDR_IN Address;
     int AddressLength = sizeof(Address);
-    SOCKET Client = accept(ListenSocket, (SOCKADDR*)&Address, &AddressLength);
+    SOCKET Client = accept(_listenSocket, (SOCKADDR*)&Address, &AddressLength);
     if (Client == INVALID_SOCKET)
     {
         throw GetException("Accept socket is invalid.");
@@ -88,9 +88,9 @@ void TcpServer::Accept()
     // TODO Return Socket.
 }
 
-std::exception TcpServer::GetException(const char* Message)
+std::exception TcpServer::GetException(const char* message)
 {
     const int ErrorCode = WSAGetLastError();
-    return std::exception('[' + ErrorCode + ']' + Message);
+    return std::exception('[' + ErrorCode + ']' + message);
 }
 
