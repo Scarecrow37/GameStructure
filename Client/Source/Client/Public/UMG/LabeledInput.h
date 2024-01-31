@@ -29,24 +29,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
 	UEditableTextBox* ValueWidget;
 
-	UPROPERTY(EditAnywhere, Category = "Slot")
+	UPROPERTY(EditInstanceOnly, Category = "Slot")
 	float SizeRatioOfLabelToValue;
 
-	UPROPERTY(EditAnywhere, Category = "Content")
+	UPROPERTY(EditInstanceOnly, Category = "Content")
 	FText Label;
-
-	UPROPERTY(EditAnywhere, Category = "Content")
-	FText Value;
-
-	UPROPERTY(EditAnywhere, Category = "Content")
+	
+	UPROPERTY(EditInstanceOnly, Category = "Content")
 	FText Hint;
 
-	UPROPERTY(EditAnywhere, Category = "Content")
+	UPROPERTY(EditInstanceOnly, Category = "Content")
 	bool IsPassword;
 	
 	virtual void NativePreConstruct() override;
 
 private:
+	FText Value;
+	
 	UFUNCTION()
 	void BindValueChanged(const FText& Text);
 };
