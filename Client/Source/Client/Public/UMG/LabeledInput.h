@@ -48,5 +48,5 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnChangedValue(const FText& Text);
+	void BindValueChanged(const FText& Text);
 };

@@ -34,11 +34,11 @@ void ULabeledInput::NativePreConstruct()
 		ValueWidget->SetHintText(Hint);
 		ValueWidget->SetText(Value);
 		ValueWidget->SetIsPassword(IsPassword);
-		ValueWidget->OnTextChanged.AddDynamic(this, &ULabeledInput::OnChangedValue);
+		ValueWidget->OnTextChanged.AddDynamic(this, &ULabeledInput::BindValueChanged);
 	}
 }
 
-void ULabeledInput::OnChangedValue(const FText& Text)
+void ULabeledInput::BindValueChanged(const FText& Text)
 {
 	Value = Text;
 }
