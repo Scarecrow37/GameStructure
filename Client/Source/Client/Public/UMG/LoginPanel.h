@@ -17,6 +17,10 @@ UCLASS()
 class CLIENT_API ULoginPanel : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintAssignable, Category="Button|Event")
+	FOnLoginButtonClickedEvent OnLoginRequested;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
@@ -27,9 +31,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
 	UButton* LoginButton;
-
-	UPROPERTY(BlueprintAssignable, Category="Button|Event")
-	FOnLoginButtonClickedEvent OnLoginRequested;
 	
 	virtual void NativePreConstruct() override;
 
