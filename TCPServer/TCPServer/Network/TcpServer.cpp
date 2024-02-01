@@ -1,5 +1,6 @@
 ﻿#include "TcpServer.h"
 
+#include <cstdio>
 #include <exception>
 #include <WinSock2.h>
 
@@ -90,7 +91,10 @@ Socket* TcpServer::Accept()
 
 std::exception TcpServer::GetException(const char* message)
 {
-    const int ErrorCode = WSAGetLastError();
-    return std::exception('[' + ErrorCode + ']' + message);
+    const int errorCode = WSAGetLastError();
+    const size_t length = 1 + sizeof(int) + strlen(message);
+    char* exceptionMessage = new char[length];
+    int result = sprintf_s(exceptionMessage,length,"[%d] %s", errorCode, message);
+    return std::exception(exceptionMessage);
 }
 
