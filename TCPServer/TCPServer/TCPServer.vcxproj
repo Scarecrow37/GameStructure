@@ -163,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Database\MySql.h" />
+    <ClInclude Include="Models\User.h" />
     <ClInclude Include="Network\Socket.h" />
     <ClInclude Include="Network\TcpServer.h" />
   </ItemGroup>

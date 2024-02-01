@@ -2,8 +2,21 @@
 #ifndef __MYSQL_H__
 #define __MYSQL_H__
 
-#include <jdbc/cppconn/driver.h>
-#include <jdbc/cppconn/connection.h>
+#include <jdbc/cppconn/sqlstring.h>
+
+struct User;
+
+namespace std
+{
+    class exception;
+}
+
+namespace sql
+{
+    class Driver;
+    class Connection;
+    class Statement;
+}
 
 
 class MySql
@@ -11,7 +24,13 @@ class MySql
 public:
     MySql();
 
-    void Connect(const char* hostName, const char* userName, const char* password);
+    void Connect(const sql::SQLString& hostName, const sql::SQLString& userName, const sql::SQLString& password);
+
+    void SetSchema(const sql::SQLString& catalog);
+
+    void CreateStatement();
+
+    User FindUser(const sql::SQLString& id) const;
 
 protected:
     static std::exception GetException(const char* message);
@@ -19,7 +38,10 @@ protected:
 private:
     sql::Driver* _driver;
     sql::Connection* _connection;
+    sql::Statement* _statement;
 
-    bool _connected;
+    bool _isConnected;
+    bool _isSetSchema;
+    bool _isCreatedStatement;
 };
 #endif

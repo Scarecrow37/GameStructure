@@ -8,8 +8,8 @@
 
 TcpServer::TcpServer() : _listenSocket(INVALID_SOCKET), _initialized(false), _bound(false), _listened(false)
 {
-    WSAData WsaData;
-    WSAStartup(MAKEWORD(2, 2), &WsaData);
+    WSAData wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
 }
 
 TcpServer::~TcpServer()
@@ -42,12 +42,12 @@ void TcpServer::Bind(const unsigned short port)
         _bound = false;
         throw GetException("Initialize first before bind.");
     }
-    SOCKADDR_IN Address = {};
-    Address.sin_family = AF_INET;
-    Address.sin_addr.s_addr = htons(ADDR_ANY);
-    Address.sin_port = htons(port);
-    const int Result = bind(_listenSocket, (SOCKADDR*)&Address, sizeof(Address));
-    if (Result == 0)
+    SOCKADDR_IN address = {};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htons(ADDR_ANY);
+    address.sin_port = htons(port);
+    const int result = bind(_listenSocket, (SOCKADDR*)&address, sizeof(address));
+    if (result == 0)
     {
         _bound = true;
     }
@@ -65,8 +65,8 @@ void TcpServer::Listen(const int backlog)
         _listened = false;
         throw GetException("Bind socket first before listen.");
     }
-    const int Result = listen(_listenSocket, backlog);
-    if (Result == 0)
+    const int result = listen(_listenSocket, backlog);
+    if (result == 0)
     {
         _listened = true;
     }
@@ -77,16 +77,16 @@ void TcpServer::Listen(const int backlog)
     }
 }
 
-Socket* TcpServer::Accept()
+Socket* TcpServer::Accept() const
 {
-    SOCKADDR_IN Address;
-    int AddressLength = sizeof(Address);
-    SOCKET Client = accept(_listenSocket, (SOCKADDR*)&Address, &AddressLength);
-    if (Client == INVALID_SOCKET)
+    SOCKADDR_IN address;
+    int addressLength = sizeof(address);
+    const SOCKET client = accept(_listenSocket, (SOCKADDR*)&address, &addressLength);
+    if (client == INVALID_SOCKET)
     {
         throw GetException("Accept socket is invalid.");
     }
-    return new Socket(Client);
+    return new Socket(client);
 }
 
 std::exception TcpServer::GetException(const char* message)
@@ -94,7 +94,8 @@ std::exception TcpServer::GetException(const char* message)
     const int errorCode = WSAGetLastError();
     const size_t length = 1 + sizeof(int) + strlen(message);
     char* exceptionMessage = new char[length];
-    int result = sprintf_s(exceptionMessage,length,"[%d] %s", errorCode, message);
+    auto _ = sprintf_s(exceptionMessage,length,"[%d] %s", errorCode, message);
+    delete[] exceptionMessage;
     return std::exception(exceptionMessage);
 }
 

@@ -17,7 +17,7 @@ public:
     void Initialize();
     void Bind(unsigned short port);
     void Listen(int backlog = 1);
-    Socket* Accept();
+    Socket* Accept() const;
 
 protected:
     static std::exception GetException(const char* message);
