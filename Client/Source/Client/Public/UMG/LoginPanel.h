@@ -24,13 +24,13 @@ public:
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
-	ULabeledInput* IdWidget;
+	TObjectPtr<ULabeledInput> IdWidget;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
-	ULabeledInput* PasswordWidget;
+	TObjectPtr<ULabeledInput> PasswordWidget;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
-	UButton* LoginButton;
+	TObjectPtr<UButton> LoginButton;
 	
 	virtual void NativePreConstruct() override;
 

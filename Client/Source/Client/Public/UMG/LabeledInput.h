@@ -24,10 +24,10 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
-	UTextBlock* LabelWidget;
+	TObjectPtr<UTextBlock> LabelWidget;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (BindWidget))
-	UEditableTextBox* ValueWidget;
+	TObjectPtr<UEditableTextBox> ValueWidget;
 
 	UPROPERTY(EditInstanceOnly, Category = "Slot")
 	float SizeRatioOfLabelToValue;
