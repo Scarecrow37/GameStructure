@@ -7,14 +7,23 @@
 ALoginPlayerController::ALoginPlayerController()
 {
 	SetShowMouseCursor(true);
+	
+}
+
+void ALoginPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
 	if (IsValid(LoginWidgetClass))
 	{
 		LoginWidget = TObjectPtr<ULoginPanel>(CreateWidget<ULoginPanel>(this, LoginWidgetClass, FName("LoginWidget")));
 		if (IsValid(LoginWidget))
 		{
 			LoginWidget->OnLoginRequested.AddDynamic(this, &ALoginPlayerController::BindLoginRequest);
-			FInputModeUIOnly InputMode(LoginWidget, EMouseLockMode::DoNotLock);
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(LoginWidget->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			Super::SetInputMode(InputMode);
+			LoginWidget->AddToViewport();
 		}
 	}
 }

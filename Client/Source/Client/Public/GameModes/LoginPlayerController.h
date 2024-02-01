@@ -20,6 +20,8 @@ class CLIENT_API ALoginPlayerController : public APlayerController
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widget")
 	TSubclassOf<ULoginPanel> LoginWidgetClass;
+	
+	virtual void BeginPlay() override;
 
 private:
 	TObjectPtr<ULoginPanel> LoginWidget;
