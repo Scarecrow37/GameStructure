@@ -4,9 +4,12 @@
 #include <exception>
 #include <WinSock2.h>
 
+#include "../Thread/ThreadEx.h"
+
 #pragma comment(lib, "ws2_32")
 
-TcpServer::TcpServer() : _listenSocket(INVALID_SOCKET), _initialized(false), _bound(false), _listened(false)
+TcpServer::TcpServer() : _listenSocket(INVALID_SOCKET), _isInitialized(false), _isBound(false), _isListened(false),
+                         _isAccepting(false)
 {
     WSAData wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -14,9 +17,13 @@ TcpServer::TcpServer() : _listenSocket(INVALID_SOCKET), _initialized(false), _bo
 
 TcpServer::~TcpServer()
 {
-    if (_initialized)
+    if (_isInitialized)
     {
         closesocket(_listenSocket);
+    }
+    if (_isAccepting)
+    {
+        _isAccepting = false;
     }
     WSACleanup();
 }
@@ -26,20 +33,20 @@ void TcpServer::Initialize()
     _listenSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_listenSocket == INVALID_SOCKET)
     {
-        _initialized = false;
+        _isInitialized = false;
         throw GetException("Create listen socket fail.");
     }
     else
     {
-        _initialized = true;
+        _isInitialized = true;
     }
 }
 
 void TcpServer::Bind(const unsigned short port)
 {
-    if (!_initialized)
+    if (!_isInitialized)
     {
-        _bound = false;
+        _isBound = false;
         throw GetException("Initialize first before bind.");
     }
     SOCKADDR_IN address = {};
@@ -49,30 +56,30 @@ void TcpServer::Bind(const unsigned short port)
     const int result = bind(_listenSocket, (SOCKADDR*)&address, sizeof(address));
     if (result == 0)
     {
-        _bound = true;
+        _isBound = true;
     }
     else
     {
-        _bound = false;
+        _isBound = false;
         throw GetException("Bind fail.");
     }
 }
 
 void TcpServer::Listen(const int backlog)
 {
-    if (!_bound)
+    if (!_isBound)
     {
-        _listened = false;
+        _isListened = false;
         throw GetException("Bind socket first before listen.");
     }
     const int result = listen(_listenSocket, backlog);
     if (result == 0)
     {
-        _listened = true;
+        _isListened = true;
     }
     else
     {
-        _listened = false;
+        _isListened = false;
         throw GetException("Listen fail.");
     }
 }
@@ -89,13 +96,27 @@ Socket* TcpServer::Accept() const
     return new Socket(client);
 }
 
-std::exception TcpServer::GetException(const char* message)
+void TcpServer::Start()
 {
-    const int errorCode = WSAGetLastError();
-    const size_t length = 1 + sizeof(int) + strlen(message);
-    char* exceptionMessage = new char[length];
-    auto _ = sprintf_s(exceptionMessage,length,"[%d] %s", errorCode, message);
-    delete[] exceptionMessage;
-    return std::exception(exceptionMessage);
+    _isAccepting = true;
+    const ThreadEx* thread = new ThreadEx(AcceptThread);
+    thread->Run(this);
+}
+
+void TcpServer::Stop()
+{
+    _isAccepting = false;
+}
+
+
+unsigned TcpServer::AcceptThread(void* args)
+{
+    TcpServer* server = (TcpServer*)args;
+    while (server->_isAccepting)
+    {
+        Socket* socket = server->Accept();
+        socket->StartReceive();
+    }
+    return 0;
 }
 

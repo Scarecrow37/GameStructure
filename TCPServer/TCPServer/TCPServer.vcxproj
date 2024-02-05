@@ -160,12 +160,16 @@
     <ClCompile Include="Network\Socket.cpp" />
     <ClCompile Include="Network\TcpServer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Network\WinsockBase.cpp" />
+    <ClCompile Include="Thread\ThreadEx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Database\MySql.h" />
     <ClInclude Include="Models\User.h" />
     <ClInclude Include="Network\Socket.h" />
     <ClInclude Include="Network\TcpServer.h" />
+    <ClInclude Include="Network\WinsockBase.h" />
+    <ClInclude Include="Thread\ThreadEx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

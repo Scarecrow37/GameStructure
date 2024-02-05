@@ -6,9 +6,10 @@
 #include <WinSock2.h>
 
 #include "Socket.h"
+#include "WinsockBase.h"
 
 
-class TcpServer
+class TcpServer : public WinsockBase
 {
 public:
     TcpServer();
@@ -18,16 +19,19 @@ public:
     void Bind(unsigned short port);
     void Listen(int backlog = 1);
     Socket* Accept() const;
+    void Start();
+    void Stop();
 
-protected:
-    static std::exception GetException(const char* message);
 
 private:
     SOCKET _listenSocket;
 
-    bool _initialized;
-    bool _bound;
-    bool _listened;
+    bool _isInitialized;
+    bool _isBound;
+    bool _isListened;
+    bool _isAccepting;
+    
+    unsigned static WINAPI AcceptThread(void* args);
 };
 
 #endif
