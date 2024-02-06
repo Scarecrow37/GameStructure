@@ -9,6 +9,7 @@ std::exception WinsockBase::GetException(const char* message)
     const size_t length = 1 + sizeof(int) + strlen(message);
     char* exceptionMessage = new char[length];
     auto _ = sprintf_s(exceptionMessage,length,"[%d] %s", errorCode, message);
+    std::exception exception(exceptionMessage);
     delete[] exceptionMessage;
-    return std::exception(exceptionMessage);
+    return exception;
 }

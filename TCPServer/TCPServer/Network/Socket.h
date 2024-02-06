@@ -9,7 +9,8 @@ public:
     explicit Socket(SOCKET socket);
     ~Socket();
     char* Receive() const;
-    void Send();
+    char* Receive(size_t size) const;
+    void Send(const char* buffer, int length) const;
     void StartReceive();
     void StopReceive();
 private:

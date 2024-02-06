@@ -21,9 +21,18 @@ namespace sql
 
 class MySql
 {
-public:
     MySql();
+    MySql(const MySql& ref);
+    MySql& operator=(const MySql& ref);
+    ~MySql();
 
+public:
+    static MySql& GetInstance()
+    {
+        static MySql mySql;
+        return mySql;
+    }
+    
     void Connect(const sql::SQLString& hostName, const sql::SQLString& userName, const sql::SQLString& password);
 
     void SetSchema(const sql::SQLString& catalog);

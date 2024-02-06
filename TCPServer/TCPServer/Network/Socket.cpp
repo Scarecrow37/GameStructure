@@ -1,9 +1,15 @@
-﻿#include "Socket.h"
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include "Socket.h"
 
 #include <iostream>
 
+#include "PacketManager.h"
 #include "TcpServer.h"
+#include "../Database/MySql.h"
 #include "../Thread/ThreadEx.h"
+#include "../Models/User.h"
+
+std::string BytesToString(const char* In, int Count);
 
 Socket::Socket(const SOCKET socket) : _socket(socket), _isReceiving(false)
 {
@@ -20,8 +26,7 @@ Socket::~Socket()
 
 char* Socket::Receive() const
 {
-    // char* buffer = new char[1024];
-    char buffer[1024] = { 0, };
+    char* buffer = new char[1024];
     const int receiveSize = recv(_socket, buffer, 1024, 0);
     if (receiveSize < 0)
     {
@@ -31,16 +36,41 @@ char* Socket::Receive() const
     {
         throw GetException("Connection Close.");
     }
-    for (int i = 0; buffer[i] != '\0'; ++i)
-    {
-        std::cout << buffer[i];
-    }
-    std::cout << std::endl;
     return buffer;
 }
 
-void Socket::Send()
+char* Socket::Receive(const size_t size) const
 {
+    char* buffer = new char[size];
+    const int receiveSize = recv(_socket, buffer, (int)size, MSG_WAITALL);
+    if (receiveSize < 0)
+    {
+        throw GetException("Receive Fail.");
+    }
+    if (receiveSize == 0)
+    {
+        throw GetException("Connection Close.");
+    }
+    return buffer;
+}
+
+void Socket::Send(const char* buffer, const int length) const
+{
+    int sentSize = 0;
+    do
+    {
+        const int sendSize = send(_socket, &buffer[sentSize], length - sentSize, 0);
+        if (sendSize < 0)
+        {
+            throw GetException("Receive Fail.");
+        }
+        if (sendSize == 0)
+        {
+            throw GetException("Connection Close.");
+        }
+        sentSize += sendSize;
+    }
+    while (sentSize < length);
 }
 
 void Socket::StartReceive()
@@ -62,9 +92,32 @@ unsigned Socket::ReceiveThread(void* args)
     {
         try
         {
-            const char* receive = socket->Receive();
-            std::string message(receive);
-            std::cout << message << std::endl;
+            const char* receive = socket->Receive(sizeof(Header));
+            const Header receiveHeader = PacketManager::BytesToHeader(receive);
+            receive = socket->Receive(receiveHeader.Size);
+            Header sendHeader;
+            switch (receiveHeader.Type)
+            {
+            case RequestLogin:
+                const RequestLoginData requestData = PacketManager::BytesToRequestLoginData(receive);
+                User user;
+                try{
+                    user = MySql::GetInstance().FindUser(requestData.Id);
+                } catch (...) {}
+                ResponseLoginData responseData;
+                responseData.IsSuccess = strcmp(requestData.Password, user.Password) == 0;
+                if (responseData.IsSuccess)
+                {
+                    strcpy_s(responseData.Nickname, sizeof(user.Nickname), user.Nickname);
+                }
+                sendHeader = {sizeof(ResponseLoginData), ResponseLogin};
+                socket->Send((char*)&sendHeader, sizeof(sendHeader));
+                socket->Send((char*)&responseData, sizeof(responseData));
+                break;
+            default:
+                throw GetException("Wrong header.");
+            }
+            delete[] receive;
         }
         catch (std::exception& exception)
         {

@@ -10,14 +10,14 @@
 int main()
 { 
     TcpServer* server = new TcpServer;
-    MySql* mySql = new MySql;
+    MySql& mySql = MySql::GetInstance();
 
     try
     {
         // Database Initialize
-        mySql->Connect("127.0.0.1", "root", "1234");
-        mySql->SetSchema("game");
-        mySql->CreateStatement();
+        mySql.Connect("127.0.0.1", "root", "1234");
+        mySql.SetSchema("game");
+        mySql.CreateStatement();
 
         // Server Initialize
         server->Initialize();
@@ -27,16 +27,11 @@ int main()
         server->Start();
 
         std::cin.get();
-        
-        User user = mySql->FindUser("AUserId");
     }
     catch (std::exception& exception)
     {
         std::cout << "Program is crushed." << std::endl << exception.what() << std::endl;
     }
-
-
-    delete mySql;
     delete server;
     return 0;
 }

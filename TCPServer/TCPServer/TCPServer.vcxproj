@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Database\MySql.cpp" />
+    <ClCompile Include="Network\PacketManager.cpp" />
     <ClCompile Include="Network\Socket.cpp" />
     <ClCompile Include="Network\TcpServer.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -166,6 +167,8 @@
   <ItemGroup>
     <ClInclude Include="Database\MySql.h" />
     <ClInclude Include="Models\User.h" />
+    <ClInclude Include="Network\Packet.h" />
+    <ClInclude Include="Network\PacketManager.h" />
     <ClInclude Include="Network\Socket.h" />
     <ClInclude Include="Network\TcpServer.h" />
     <ClInclude Include="Network\WinsockBase.h" />

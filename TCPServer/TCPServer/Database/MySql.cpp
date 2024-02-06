@@ -13,6 +13,25 @@ MySql::MySql() : _connection(nullptr), _statement(nullptr), _isConnected(false),
     _driver = get_driver_instance();
 }
 
+MySql::MySql(const MySql& ref) : _connection(ref._connection), _statement(ref._statement), _isConnected(ref._isConnected), _isSetSchema(ref._isSetSchema),
+                 _isCreatedStatement(ref._isCreatedStatement)
+{
+    _driver = ref._driver;
+}
+
+MySql& MySql::operator=(const MySql& ref)
+{
+    _connection = ref._connection;
+    _statement = ref._statement;
+    _isConnected = ref._isConnected;
+    _isSetSchema = ref._isSetSchema;
+    _isCreatedStatement = ref._isCreatedStatement;
+    _driver = ref._driver;
+    return *this;
+}
+
+MySql::~MySql() = default;
+
 void MySql::Connect(const sql::SQLString& hostName, const sql::SQLString& userName, const sql::SQLString& password)
 {
     _connection = _driver->connect(hostName, userName, password);
