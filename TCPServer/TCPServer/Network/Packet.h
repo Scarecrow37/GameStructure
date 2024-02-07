@@ -6,6 +6,8 @@ enum PacketType : unsigned short
 {
     RequestLogin = 10,
     ResponseLogin = 20,
+    RequestCreateAccount = 30,
+    ResponseCreateAccount = 40,
     Max
 };
 
@@ -26,6 +28,18 @@ struct ResponseLoginData
 {
     bool IsSuccess;
     char Nickname[20];
+};
+
+struct RequestCreateAccountData
+{
+    char Id[20];
+    char Password[20];
+    char Nickname[20];
+};
+
+struct ResponseCreateAccountData
+{
+    bool IsSuccess;
 };
 #pragma pack(pop)
 

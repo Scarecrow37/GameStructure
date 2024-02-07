@@ -2,7 +2,6 @@
 
 #include <cstring>
 #include <iostream>
-#include <string>
 
 Header PacketManager::BytesToHeader(const char* bytes)
 {
@@ -18,11 +17,27 @@ RequestLoginData PacketManager::BytesToRequestLoginData(const char* bytes)
 {
     RequestLoginData data = {};
     int pivot = 0;
-    char* result = BytesToChar(&bytes[pivot], sizeof(data.Id));
+    const char* result = BytesToChar(&bytes[pivot], sizeof(data.Id));
     memcpy(&data.Id, result, sizeof(data.Id));
     pivot += sizeof(data.Id);
     result = BytesToChar(&bytes[pivot], sizeof(data.Password));
     memcpy(&data.Password, result, sizeof(data.Password));
+    delete[] result;
+    return data;
+}
+
+RequestCreateAccountData PacketManager::BytesToRequestCreateAccountData(const char* bytes)
+{
+    RequestCreateAccountData data = {};
+    int pivot = 0;
+    const char* result = BytesToChar(&bytes[pivot], sizeof(data.Id));
+    memcpy(&data.Id, result, sizeof(data.Id));
+    pivot += sizeof(data.Id);
+    result = BytesToChar(&bytes[pivot], sizeof(data.Password));
+    memcpy(&data.Password, result, sizeof(data.Password));
+    pivot += sizeof(data.Password);
+    result = BytesToChar(&bytes[pivot], sizeof(data.Nickname));
+    memcpy(&data.Nickname, result, sizeof(data.Nickname));
     delete[] result;
     return data;
 }

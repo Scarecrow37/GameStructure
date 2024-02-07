@@ -73,6 +73,46 @@ void Socket::Send(const char* buffer, const int length) const
     while (sentSize < length);
 }
 
+void Socket::Login(const RequestLoginData& requestData) const
+{
+    Header sendHeader;
+    ResponseLoginData responseData;
+    try{
+        const User user = MySql::GetInstance().FindUser(requestData.Id);
+        responseData.IsSuccess = strcmp(requestData.Password, user.Password) == 0;
+        if (responseData.IsSuccess)
+        {
+            strcpy_s(responseData.Nickname, sizeof(user.Nickname), user.Nickname);
+        }
+                
+    } catch (std::exception& exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
+    sendHeader = {sizeof(ResponseLoginData), ResponseLogin};
+    Send((char*)&sendHeader, sizeof(sendHeader));
+    Send((char*)&responseData, sizeof(responseData));
+}
+
+void Socket::CreateAccount(const RequestCreateAccountData& requestData) const
+{
+    User user;
+    memcpy(&user, &requestData, sizeof(User));
+    Header sendHeader;
+    ResponseCreateAccountData responseData{false};
+    try{
+        MySql::GetInstance().CreateAccount(user);
+        responseData.IsSuccess = true;
+    } catch (std::exception& exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
+    sendHeader = {sizeof(ResponseCreateAccountData), ResponseCreateAccount};
+    Send((char*)&sendHeader, sizeof(sendHeader));
+    Send((char*)&responseData, sizeof(responseData));
+}
+
+
 void Socket::StartReceive()
 {
     _isReceiving = true;
@@ -95,24 +135,15 @@ unsigned Socket::ReceiveThread(void* args)
             const char* receive = socket->Receive(sizeof(Header));
             const Header receiveHeader = PacketManager::BytesToHeader(receive);
             receive = socket->Receive(receiveHeader.Size);
-            Header sendHeader;
             switch (receiveHeader.Type)
             {
             case RequestLogin:
-                const RequestLoginData requestData = PacketManager::BytesToRequestLoginData(receive);
-                User user;
-                try{
-                    user = MySql::GetInstance().FindUser(requestData.Id);
-                } catch (...) {}
-                ResponseLoginData responseData;
-                responseData.IsSuccess = strcmp(requestData.Password, user.Password) == 0;
-                if (responseData.IsSuccess)
-                {
-                    strcpy_s(responseData.Nickname, sizeof(user.Nickname), user.Nickname);
-                }
-                sendHeader = {sizeof(ResponseLoginData), ResponseLogin};
-                socket->Send((char*)&sendHeader, sizeof(sendHeader));
-                socket->Send((char*)&responseData, sizeof(responseData));
+                const RequestLoginData loginData = PacketManager::BytesToRequestLoginData(receive);
+                socket->Login(loginData);
+                break;
+            case RequestCreateAccount:
+                const RequestCreateAccountData accountData = PacketManager::BytesToRequestCreateAccountData(receive);
+                socket->CreateAccount(accountData);
                 break;
             default:
                 throw GetException("Wrong header.");

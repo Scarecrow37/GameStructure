@@ -17,7 +17,7 @@ int main()
         // Database Initialize
         mySql.Connect("127.0.0.1", "root", "1234");
         mySql.SetSchema("game");
-        mySql.CreateStatement();
+        mySql.InitializeStatements();
 
         // Server Initialize
         server->Initialize();

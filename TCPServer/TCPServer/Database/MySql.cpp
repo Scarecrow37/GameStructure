@@ -3,18 +3,23 @@
 #include <jdbc/cppconn/driver.h>
 #include <jdbc/cppconn/connection.h>
 #include <jdbc/cppconn/statement.h>
+#include <jdbc/cppconn/prepared_statement.h>
 #include "../Models/User.h"
 
 #pragma comment(lib, "debug/mysqlcppconn")
 
-MySql::MySql() : _connection(nullptr), _statement(nullptr), _isConnected(false), _isSetSchema(false),
+MySql::MySql() : _connection(nullptr), _statement(nullptr), _findUserPreparedStatement(nullptr),
+                 _createAccountPreparedStatement(nullptr), _isConnected(false),
+                 _isSetSchema(false),
                  _isCreatedStatement(false)
 {
     _driver = get_driver_instance();
 }
 
-MySql::MySql(const MySql& ref) : _connection(ref._connection), _statement(ref._statement), _isConnected(ref._isConnected), _isSetSchema(ref._isSetSchema),
-                 _isCreatedStatement(ref._isCreatedStatement)
+MySql::MySql(const MySql& ref) : _connection(ref._connection), _statement(ref._statement),
+                                 _findUserPreparedStatement(nullptr), _createAccountPreparedStatement(nullptr),
+                                 _isConnected(ref._isConnected), _isSetSchema(ref._isSetSchema),
+                                 _isCreatedStatement(ref._isCreatedStatement)
 {
     _driver = ref._driver;
 }
@@ -23,6 +28,8 @@ MySql& MySql::operator=(const MySql& ref)
 {
     _connection = ref._connection;
     _statement = ref._statement;
+    _findUserPreparedStatement = ref._findUserPreparedStatement;
+    _createAccountPreparedStatement = ref._createAccountPreparedStatement;
     _isConnected = ref._isConnected;
     _isSetSchema = ref._isSetSchema;
     _isCreatedStatement = ref._isCreatedStatement;
@@ -30,7 +37,14 @@ MySql& MySql::operator=(const MySql& ref)
     return *this;
 }
 
-MySql::~MySql() = default;
+MySql::~MySql()
+{
+    delete _findUserPreparedStatement;
+    delete _createAccountPreparedStatement;
+    delete _statement;
+    _connection->close();
+    delete _connection;
+};
 
 void MySql::Connect(const sql::SQLString& hostName, const sql::SQLString& userName, const sql::SQLString& password)
 {
@@ -59,33 +73,61 @@ void MySql::SetSchema(const sql::SQLString& catalog)
     _isSetSchema = true;
 }
 
-void MySql::CreateStatement()
+void MySql::InitializeStatements()
 {
     if(!_isSetSchema)
     {
         _isCreatedStatement = false;
         throw GetException("Set schema first before create statement");
     }
+    try
+    {
+        CreateStatement();
+        CreateFindUserStatement();
+        CreateCreateAccountStatement();
+    }
+    catch (...)
+    {
+        _isCreatedStatement = false;
+        throw;
+    }
+    
+    _isCreatedStatement = true;
+}
+
+void MySql::CreateStatement()
+{
     _statement = _connection->createStatement();
     if (_statement == nullptr)
     {
-        _isCreatedStatement = false;
         throw GetException("Create statement fail.");
     }
-    _isCreatedStatement = true;
+}
+
+void MySql::CreateFindUserStatement()
+{
+    const sql::SQLString query("SELECT * FROM `user` WHERE `id` = ?");
+    _findUserPreparedStatement = _connection->prepareStatement(query);
+    if (_findUserPreparedStatement == nullptr)
+    {
+        throw GetException("Create prepared statement fail.");
+    }
+}
+
+void MySql::CreateCreateAccountStatement()
+{
+    const sql::SQLString query("INSERT INTO `user` VALUES(?, ?, ?)");
+    _createAccountPreparedStatement = _connection->prepareStatement(query);
+    if (_createAccountPreparedStatement == nullptr)
+    {
+        throw GetException("Create create account statement fail.");
+    }
 }
 
 User MySql::FindUser(const sql::SQLString& id) const
 {
-    constexpr char queryFormat[] = "select * from `user` where `id` = \"%s\"";
-    const size_t queryLength = strlen(queryFormat) + id.length() + 1;
-    char* query = new char[queryLength];
-    const int result = sprintf_s(query, queryLength, queryFormat, id.c_str());
-    if (result == -1)
-    {
-        throw GetException("Make Query fail.");
-    }
-    sql::ResultSet* resultSet = _statement->executeQuery(query);
+    _findUserPreparedStatement->setString(1, id);
+    sql::ResultSet* resultSet = _findUserPreparedStatement->executeQuery();
     User user = {};
     for (;resultSet->next();)
     {
@@ -106,8 +148,15 @@ User MySql::FindUser(const sql::SQLString& id) const
         throw GetException("Found user is difference");
     }
     
-    delete[] query;
     return user;
+}
+
+void MySql::CreateAccount(const User& user) const
+{
+    _createAccountPreparedStatement->setString(1, user.Id);
+    _createAccountPreparedStatement->setString(2, user.Password);
+    _createAccountPreparedStatement->setString(3, user.Nickname);
+    _createAccountPreparedStatement->execute();
 }
 
 std::exception MySql::GetException(const char* message)
